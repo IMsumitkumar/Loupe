@@ -109,7 +109,6 @@ struct VerdictView: View {
     var body: some View {
         let snap = engine.snapshot
         let v = snap?.verdict
-        let band = v?.band ?? "unknown"
         HStack(alignment: .top, spacing: 10) {
             StateDot(state: dotState(v)).padding(.top, 6)
             VStack(alignment: .leading, spacing: 4) {

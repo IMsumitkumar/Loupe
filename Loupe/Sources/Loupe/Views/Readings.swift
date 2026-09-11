@@ -70,7 +70,7 @@ enum Readings {
             let rx = s.netRx, tx = s.netTx
             let ifaces = s.mole?.network.count ?? 0
             let ctx = s.moleAlive ? "\(ifaces) interface\(ifaces == 1 ? "" : "s") · ↓ \(Fmt.rate(rx)) ↑ \(Fmt.rate(tx))" : "Measured by the full check only"
-            let sum = zip(h.netRx, h.netTx).map { a, b in (a == nil && b == nil) ? nil : (a ?? 0) + (b ?? 0) }
+            let sum = sumSeries(h.netRx, h.netTx)
             return TileReading(label: "Network", value: Fmt.rate(rx + tx), unit: "total", context: ctx, state: .ok, series: sum, trend: Trend.of(sum), technical: tech, available: s.moleAlive)
         case .power, .energy:
             let w = s.mole?.thermal.systemPower ?? 0
@@ -101,10 +101,24 @@ enum Readings {
         case .disk_io:
             let r = s.mole?.diskIo.readRate ?? 0, w = s.mole?.diskIo.writeRate ?? 0
             let state = Palette.level(r + w, warn: t.ioWarn, crit: t.ioCrit)
-            let sum = zip(h.diskR, h.diskW).map { a, b in (a == nil && b == nil) ? nil : (a ?? 0) + (b ?? 0) }
+            let sum = sumSeries(h.diskR, h.diskW)
             return TileReading(label: "Disk activity", value: Fmt.rate(r + w), unit: "read + write", context: "read \(Fmt.rate(r)) · write \(Fmt.rate(w))", state: state, series: sum, trend: Trend.of(sum),
                                reason: state == .ok ? nil : "The disk is moving \(Int(r + w)) MB/s. Heavy reading and writing makes apps wait.", technical: tech, available: s.moleAlive)
         }
+    }
+
+    /// Element-wise sum of two series; a gap in both stays a gap.
+    private static func sumSeries(_ a: [Float?], _ b: [Float?]) -> [Float?] {
+        var out: [Float?] = []
+        out.reserveCapacity(min(a.count, b.count))
+        for (x, y) in zip(a, b) {
+            if x == nil && y == nil {
+                out.append(nil)
+            } else {
+                out.append((x ?? 0) + (y ?? 0))
+            }
+        }
+        return out
     }
 
     private static func busyContext(_ u: Double, _ s: Snapshot) -> String {
