@@ -72,9 +72,10 @@ final class PanelController {
         effect.addSubview(hosting)
         panel.onCancel = { [weak self] in self?.hide() }
         NotificationCenter.default.addObserver(forName: NSWindow.didMoveNotification, object: panel, queue: .main) { [weak self] _ in
+            let controller = self
             Task { @MainActor in
-                guard let self, !self.settingFrame, self.panel.isVisible else { return }
-                self.userMoved = true
+                guard let controller, !controller.settingFrame, controller.panel.isVisible else { return }
+                controller.userMoved = true
             }
         }
         // Content height follows the data: refit after every snapshot and any preference change.

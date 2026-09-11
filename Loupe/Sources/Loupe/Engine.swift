@@ -29,12 +29,14 @@ final class Engine: ObservableObject {
         let nc = NSWorkspace.shared.notificationCenter
         for name in [NSWorkspace.willSleepNotification, NSWorkspace.screensDidSleepNotification] {
             observers.append(nc.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
-                Task { @MainActor in self?.suspend() }
+                let engine = self
+                Task { @MainActor in engine?.suspend() }
             })
         }
         for name in [NSWorkspace.didWakeNotification, NSWorkspace.screensDidWakeNotification] {
             observers.append(nc.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
-                Task { @MainActor in self?.resume() }
+                let engine = self
+                Task { @MainActor in engine?.resume() }
             })
         }
         prefsSink = Prefs.shared.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (_: Void) in
