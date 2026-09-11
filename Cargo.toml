@@ -1,0 +1,7 @@
+[workspace]
+members = ["sysmon-core"]
+resolver = "2"
+
+[profile.release]
+lto = true
+codegen-units = 1

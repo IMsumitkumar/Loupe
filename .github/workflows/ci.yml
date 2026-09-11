@@ -1,0 +1,24 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust tests and no-unwrap audit
+        run: |
+          rustup target add aarch64-apple-darwin
+          cargo test --manifest-path sysmon-core/Cargo.toml
+          make check-unwrap
+      - name: Rust staticlib (arm64)
+        run: make rust ARCHS=arm64
+      - name: Swift build and unit tests
+        run: |
+          cd Loupe
+          swift build
+          swift test --skip SnapshotTests
+      - name: App bundle
+        run: make app ARCHS=arm64

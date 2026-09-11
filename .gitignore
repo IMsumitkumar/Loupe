@@ -1,0 +1,11 @@
+# build output
+/target
+/build
+/dist
+/Loupe/.build
+*.dmg
+*.log
+
+# local tooling
+.DS_Store
+.deepeval/
